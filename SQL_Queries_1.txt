@@ -1,0 +1,84 @@
+
+select o.last, o.first from crime_officers c right join officers o
+on c.officer_id = o.officer_id
+group by o.last, o.first, 0.
+having count(c.officer_id)>(select AVG(count(officer_id))   
+        from crime_officers
+        group by officer_id);
+
+
+select b.last, b.first from crimes a right join criminals b
+on a.criminal_id = b.criminal_id
+where b.v_status = 'N'
+group by b.last,b.first
+having count(a.criminal_id)<(select AVG(count(criminal_id))
+        from crimes
+        group by criminal_id);
+
+        
+SELECT
+    * FROM appeals
+    where (to_date(hearing_date,'dd-mm-yyyy')- to_date(filing_date,'dd-mm-yyyy'))<
+    (select AVG(to_date(hearing_date,'dd-mm-yyyy')-to_date(filing_date,'dd-mm-yyyy')) from appeals); 
+    
+    
+    
+select p.prob_id,s.prob_id,p.last, p.first from sentences s right join prob_officers p
+on s.prob_id = p.prob_id
+where p.prob_id=(
+select prob_id from sentences
+group by prob_id
+having count(prob_id)>=(select AVG(count(s.prob_id))
+        from sentences s right join prob_officers p
+        on s.prob_id = p.prob_id
+        group by p.prob_id));
+        
+
+select * from crimes where crime_id in (
+                        select crime_id from appeals
+                        having count(crime_id)>= all (
+                                    select count(crime_id)from appeals
+                                    group by crime_id)
+                        group by crime_id)
+     
+        
+select * from crime_charges
+where fine_amount<(select AVG(fine_amount) from crime_charges)
+and amount_paid > (select AVG(amount_paid) from crime_charges)
+
+
+select distinct x.crime_id,c.* from criminals c right join crimes x
+on c.criminal_id = x.criminal_id
+where x.crime_id = 10091;
+
+
+que : 7
+
+SELECT
+last,
+first
+FROM
+criminals
+WHERE
+criminal_id IN (
+SELECT
+criminal_id
+FROM
+crimes
+WHERE
+crime_id IN (
+SELECT
+crime_id
+FROM
+crime_charges
+WHERE
+crime_code IN (
+SELECT
+crime_code
+FROM
+crime_charges
+WHERE
+crime_id = '10091'
+)
+)
+);
